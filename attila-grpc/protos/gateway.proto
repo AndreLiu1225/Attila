@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package gateway;
+
+service AttilaGateway {
+    rpc Health(HealthRequest) returns (HealthResponse);
+
+    rpc SubmitTask(TaskRequest) returns (stream TaskResponse);
+}
+
+message HealthRequest {
+    string request_id = 1;
+}
+
+message HealthResponse {
+    StatusType status = 1;
+}
+
+message TaskResponse {
+    string request_id = 1;
+    string prompt = 2;
+    string response = 3;
+}
+
+message TaskRequest {
+    string request_id = 1;
+    string content = 2;
+    EventType type = 3;
+}
+
+enum EventType {
+    PROMPT_EVENT = 0;
+    TOOL_EVENT = 1;
+}
+
+enum StatusType {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_ACTIVE = 1;
+    STATUS_DEFERRED = 2;
+    STATUS_FAILED = 3;
+}
