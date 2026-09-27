@@ -10,6 +10,20 @@ type StaticData = {
     totalMemoryGB: number;
 };
 
+type HealthResponse = {
+    status: string;
+};
+
+type TaskRequest = {
+    content: string;
+};
+
+type TaskResponse = {
+    request_id: string;
+    prompt: string;
+    response: string;
+};
+
 type View = 'CPU' | 'RAM' | 'STORAGE';
 
 type FrameWindowAction = 'CLOSE' | 'MAXIMIZE' | 'MINIMIZE';
@@ -19,6 +33,8 @@ type EventPayloadMapping = {
     getStaticData: StaticData;
     changeView: View;
     sendFrameAction: FrameWindowAction;
+    getHealthResponse: HealthResponse;
+    getTaskResponse: TaskResponse[];
 };
 
 type UnsubscribeFunction = () => void;
@@ -33,5 +49,7 @@ interface Window {
             callback: (view: View) => void
         ) => UnsubscribeFunction;
         sendFrameAction: (payload: FrameWindowAction) => void;
+        getHealthResponse: () => Promise<HealthResponse>;
+        getTaskResponse: (content: string) => Promise<TaskResponse[]>;
     };
 }

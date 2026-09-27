@@ -28,6 +28,76 @@ header button {
   background-color: lime;
 }
 
+.statusBar {
+  max-width: 900px;
+  margin: 1rem auto 0;
+  padding: 0 1rem;
+}
+
+.statusBar p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.promptSection {
+  max-width: 900px;
+  margin: 1rem auto 0;
+  padding: 0 1rem;
+}
+
+.promptForm {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+}
+
+.promptInput {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #444;
+  background-color: #2c2c2c;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.promptInput:focus {
+  outline: 2px solid #5dd4ee;
+  outline-offset: 1px;
+}
+
+.promptSubmit {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  background-color: #5dd4ee;
+  color: #0a4d5c;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.promptSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.promptError {
+  margin: 0.75rem 0 0;
+  color: #ff6b6b;
+}
+
+.promptResponses {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: #2c2c2c;
+}
+
+.promptResponse {
+  margin: 0;
+}
+
+.promptResponse + .promptResponse {
+  margin-top: 0.75rem;
+}
+
 .main {
   display: grid;
   grid-template-columns: 16rem auto;
@@ -36,7 +106,7 @@ header button {
   margin: 1rem;
   max-width: 900px;
   margin: auto;
-  margin-top: 4rem;
+  margin-top: 2rem;
 }
 
 .mainGrid {

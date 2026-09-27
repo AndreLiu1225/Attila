@@ -19,6 +19,8 @@
     "test:unit": "vitest src"
   },
   "dependencies": {
+    "@grpc/grpc-js": "^1.14.5",
+    "@grpc/proto-loader": "^0.8.1",
     "os-utils": "^0.0.14",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

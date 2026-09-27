@@ -1,12 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import './App.css';
 import { useStatistics } from './useStatistics';
 import { Chart } from './Chart';
+import { useHealthResponse } from './useHealthResponse';
+import { useTaskResponse } from './useTaskResponse';
 
 function App() {
   const staticData = useStaticData();
   const statistics = useStatistics(10);
+  const health = useHealthResponse();
+  const { responses, error, isSubmitting, submitPrompt } = useTaskResponse();
   const [activeView, setActiveView] = useState<View>('CPU');
+  const [prompt, setPrompt] = useState('');
   const cpuUsages = useMemo(
     () => statistics.map((stat) => stat.cpuUsage),
     [statistics]
@@ -34,9 +39,42 @@ function App() {
     return window.electron.subscribeChangeView((view) => setActiveView(view));
   }, []);
 
+  const handlePromptSubmit: NonNullable<ComponentProps<'form'>['onSubmit']> = async (event) => {
+    event.preventDefault();
+    await submitPrompt(prompt);
+  };
+
   return (
     <div className="App">
       <Header />
+      <div className="statusBar">
+        <p>Server status: {health?.status ?? 'loading...'}</p>
+      </div>
+      <section className="promptSection">
+        <form className="promptForm" onSubmit={handlePromptSubmit}>
+          <input
+            className="promptInput"
+            type="text"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            placeholder="Ask Attila anything..."
+            disabled={isSubmitting}
+          />
+          <button className="promptSubmit" type="submit" disabled={isSubmitting || !prompt.trim()}>
+            {isSubmitting ? 'Waiting...' : 'Submit'}
+          </button>
+        </form>
+        {error && <p className="promptError">{error}</p>}
+        {responses.length > 0 && (
+          <div className="promptResponses">
+            {responses.map((taskResponse, index) => (
+              <p key={`${taskResponse.request_id}-${index}`} className="promptResponse">
+                {taskResponse.response}
+              </p>
+            ))}
+          </div>
+        )}
+      </section>
       <div className="main">
         <div>
           <SelectOption

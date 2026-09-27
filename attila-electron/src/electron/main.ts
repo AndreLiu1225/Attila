@@ -4,8 +4,9 @@ import { getStaticData, pollResources } from './resourceManager.js';
 import { getPreloadPath, getUIPath } from './pathResolver.js';
 import { createTray } from './tray.js';
 import { createMenu } from './menu.js';
+import { getHealthResponse, getTaskResponse } from './grpcClient.js';
 
-app.on('ready', () => {
+app.on('ready', async () => {
     const mainWindow = new BrowserWindow({
         webPreferences: {
             preload: getPreloadPath(),
@@ -22,6 +23,15 @@ app.on('ready', () => {
 
     ipcMainHandle('getStaticData', () => {
         return getStaticData();
+    });
+
+    ipcMainHandle('getHealthResponse', () => {
+        return getHealthResponse();
+    });
+
+    ipcMainHandle('getTaskResponse', (payload) => {
+        const request = payload as TaskRequest;
+        return getTaskResponse(request.content);
     });
 
     ipcMainOn('sendFrameAction', (payload) => {
