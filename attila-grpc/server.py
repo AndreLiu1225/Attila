@@ -54,6 +54,8 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
                 )
                 return
 
+            messages.append(reply.assistant_message)
+
             for call in reply.tool_calls:
                 yield gateway_pb2.AgentEvent(
                     run_id=request.run_id,
@@ -73,7 +75,12 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
                         ok=True,
                     ),
                 )
-                messages.append({"role": "tool", "content": output})
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.tool_call_id,
+                    "name": call.name,
+                    "content": output,
+                })
 
         yield gateway_pb2.AgentEvent(
             run_id=request.run_id,

@@ -21,10 +21,13 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.5",
     "@grpc/proto-loader": "^0.8.1",
+    "mermaid": "^12.0.0",
     "os-utils": "^0.0.14",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "recharts": "^3.10.1"
+    "react-markdown": "^10.1.0",
+    "recharts": "^3.10.1",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

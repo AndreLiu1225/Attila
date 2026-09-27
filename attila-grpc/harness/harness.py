@@ -5,6 +5,9 @@ import gateway_pb2
 from groq import Groq
 from dotenv import load_dotenv
 
+# web Search Library
+from ddgs import DDGS
+
 load_dotenv()
 
 MODEL = "openai/gpt-oss-120b"
@@ -14,24 +17,38 @@ TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
-            "name": "echo",
-            "description": "Repeat the given text back.",
+            "name": "web_search",
+            "description": "Search the web for current information. Use this when the answer depends on facts you do not already know.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "text": {"type": "string"},
+                    "query": {
+                        "type": "string",
+                        "description": "The search query",
+                    }
                 },
-                "required": ["text"],
+                "required": ["query"],
             },
         },
-    }
+    },
 ]
 
-def echo(text: str) -> str:
-    return text
+
+def web_search(query: str) -> str:
+    results = DDGS().text(query, max_results=5)
+    if not results:
+        return f"No results for {query}"
+
+    lines = []
+    for result in results:
+        title = result.get("title", "")
+        href = result.get("href", "")
+        body = result.get("body", "")
+        lines.append(f"{title}\n{href}\n{body}")
+    return "\n\n".join(lines)
 
 TOOLS = {
-    "echo": echo
+    "web_search": web_search
 }
 
 @dataclass
