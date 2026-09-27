@@ -35,21 +35,20 @@ export async function getHealthResponse(): Promise<HealthResponse> {
     });
 }
 
-export async function getTaskResponse(content: string): Promise<TaskResponse[]> {
+export async function runAgent(prompt: string): Promise<AgentEvent[]> {
     const client = createClient();
 
-    return new Promise<TaskResponse[]>((resolve, reject) => {
-        const responses: TaskResponse[] = [];
-        const stream = client.SubmitTask({
-            request_id: randomUUID(),
-            content,
-            type: 'PROMPT_EVENT',
+    return new Promise<AgentEvent[]>((resolve, reject) => {
+        const events: AgentEvent[] = [];
+        const stream = client.RunAgent({
+            run_id: randomUUID(),
+            prompt,
         });
 
-        stream.on('data', (response: TaskResponse) => {
-            responses.push(response);
+        stream.on('data', (event: AgentEvent) => {
+            events.push(event);
         });
         stream.on('error', reject);
-        stream.on('end', () => resolve(responses));
+        stream.on('end', () => resolve(events));
     });
 }

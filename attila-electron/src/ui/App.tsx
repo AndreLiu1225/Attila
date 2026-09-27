@@ -3,13 +3,13 @@ import './App.css';
 import { useStatistics } from './useStatistics';
 import { Chart } from './Chart';
 import { useHealthResponse } from './useHealthResponse';
-import { useTaskResponse } from './useTaskResponse';
+import { formatAgentEvent, useTaskResponse } from './useTaskResponse';
 
 function App() {
   const staticData = useStaticData();
   const statistics = useStatistics(10);
   const health = useHealthResponse();
-  const { responses, error, isSubmitting, submitPrompt } = useTaskResponse();
+  const { events, error, isSubmitting, submitPrompt } = useTaskResponse();
   const [activeView, setActiveView] = useState<View>('CPU');
   const [prompt, setPrompt] = useState('');
   const cpuUsages = useMemo(
@@ -65,11 +65,11 @@ function App() {
           </button>
         </form>
         {error && <p className="promptError">{error}</p>}
-        {responses.length > 0 && (
+        {events.length > 0 && (
           <div className="promptResponses">
-            {responses.map((taskResponse, index) => (
-              <p key={`${taskResponse.request_id}-${index}`} className="promptResponse">
-                {taskResponse.response}
+            {events.map((agentEvent, index) => (
+              <p key={`${agentEvent.run_id}-${agentEvent.event}-${index}`} className="promptResponse">
+                {formatAgentEvent(agentEvent)}
               </p>
             ))}
           </div>
