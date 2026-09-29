@@ -51,6 +51,10 @@ function toolLabel(name: string, argumentsJson: string): string {
         return `Searched the web for "${args.query ?? ''}"`;
     }
 
+    if (name === 'bash') {
+        return `Ran \`${args.query ?? ''}\``;
+    }
+
     return `Used ${name}`;
 }
 

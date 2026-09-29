@@ -8,7 +8,7 @@ service AttilaGateway {
     // Test Method
     rpc SubmitTask(TaskRequest) returns (stream TaskResponse);
 
-    rpc RunAgent(RunRequest) returns (stream AgentEvent);
+    rpc RunAgent(stream ClientMessage) returns (stream AgentEvent);
 }
 
 message HealthRequest {
@@ -19,27 +19,7 @@ message HealthResponse {
     StatusType status = 1;
 }
 
-// Test TaskResponse message
-message TaskResponse {
-    string request_id = 1;
-    string prompt = 2;
-    string response = 3;
-}
-
-// Test TaskRequest message
-message TaskRequest {
-    string request_id = 1;
-    string content = 2;
-    EventType type = 3;
-}
-
-// Test EventType enum
-enum EventType {
-    PROMPT_EVENT = 0;
-    TOOL_EVENT = 1;
-}
-
-// Test StatusType enum
+//*************************Actual Types****************************/
 enum StatusType {
     STATUS_UNSPECIFIED = 0;
     STATUS_ACTIVE = 1;
@@ -47,7 +27,19 @@ enum StatusType {
     STATUS_FAILED = 3;
 }
 
-//*************************Actual Types****************************/
+message ClientMessage {
+    oneof msg {
+        RunRequest run_request = 1;
+        ToolResult tool_result = 2;
+    }
+}
+
+message ToolResult {
+    string tool_call_id = 1;
+    string output = 2;
+    bool ok = 3;
+}
+
 message RunRequest {
     string run_id = 1;
     string prompt = 2;
@@ -103,4 +95,24 @@ message RunCompleted {
 }
 message RunFailed {
     string message = 1;
+}
+
+// Test TaskResponse message
+message TaskResponse {
+    string request_id = 1;
+    string prompt = 2;
+    string response = 3;
+}
+
+// Test TaskRequest message
+message TaskRequest {
+    string request_id = 1;
+    string content = 2;
+    EventType type = 3;
+}
+
+// Test EventType enum
+enum EventType {
+    PROMPT_EVENT = 0;
+    TOOL_EVENT = 1;
 }

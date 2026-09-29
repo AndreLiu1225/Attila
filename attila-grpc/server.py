@@ -23,31 +23,41 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
             yield task_response
             time.sleep(3)
 
-    def RunAgent(self, request, context):
+    def RunAgent(self, request_iterator, context):
         print("Run Agent Request Made:")
-        print(request)
+        # request_iterator is the incoming client stream.
+        # The first message is the prompt. Later messages are tool results.
+        incoming = next(request_iterator)
+        if not incoming.HasField("run_request"):
+            yield gateway_pb2.AgentEvent(
+                run_failed=gateway_pb2.RunFailed(message="first message must be run_request"),
+            )
+            return
+
+        request = incoming.run_request
         messages = [{"role": "user", "content": request.prompt}]
 
         for step in range(1, 10):
             yield gateway_pb2.AgentEvent(
                 run_id=request.run_id,
                 model_started=gateway_pb2.ModelStarted(
-                    model_name="gpt-4.1-mini",
-                    step_number=step
-                ),
+                    model_name="openai/gpt-oss-120b",
+                )
             )
 
-            reply = call_model(messages)
+            # Wait for Groq to return text and tool calls if needed.
+            reply = call_model(messages=messages)
 
             yield gateway_pb2.AgentEvent(
                 run_id=request.run_id,
                 model_finished=gateway_pb2.ModelFinished(
                     text=reply.text,
                     tool_calls=reply.tool_calls,
-                ),
+                )
             )
 
             if not reply.tool_calls:
+                # This is the model's final answer. return and close the bidirectional stream.
                 yield gateway_pb2.AgentEvent(
                     run_id=request.run_id,
                     run_completed=gateway_pb2.RunCompleted(final_text=reply.text)
@@ -65,23 +75,35 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
                         arguments_json=call.arguments_json,
                     ),
                 )
-                output = run_tool(call.name, call.arguments_json)
+
+                if call.name == "bash":
+                    # Pause the loop. Let Electron run the command and send the ToolResult back on the stream
+                    result = next(request_iterator).tool_result
+                    output = result.output
+                    ok = result.ok
+                else:
+                    output = run_tool(call.name, call.arguments_json)
+                    ok = True
+
                 yield gateway_pb2.AgentEvent(
                     run_id=request.run_id,
                     tool_finished=gateway_pb2.ToolFinished(
                         tool_call_id=call.tool_call_id,
                         name=call.name,
                         output=output,
-                        ok=True,
+                        ok=ok,
                     ),
                 )
+
+                # Give that output back to Groq for the next model step.
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call.tool_call_id,
                     "name": call.name,
                     "content": output,
                 })
-
+                
+        # The model kept calling tools until the step cap. The stream ends.
         yield gateway_pb2.AgentEvent(
             run_id=request.run_id,
             run_failed=gateway_pb2.RunFailed(message="max steps"),

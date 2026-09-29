@@ -24,45 +24,49 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rgateway.proto\x12\x07gateway\"#\n\rHealthRequest\x12\x12\n\nrequest_id\x18\x01 \x01(\t\"5\n\x0eHealthResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.gateway.StatusType\"D\n\x0cTaskResponse\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0e\n\x06prompt\x18\x02 \x01(\t\x12\x10\n\x08response\x18\x03 \x01(\t\"T\n\x0bTaskRequest\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\x12 \n\x04type\x18\x03 \x01(\x0e\x32\x12.gateway.EventType\",\n\nRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x0e\n\x06prompt\x18\x02 \x01(\t\"\xeb\x02\n\nAgentEvent\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12*\n\x0brun_started\x18\x02 \x01(\x0b\x32\x13.gateway.RunStartedH\x00\x12.\n\rmodel_started\x18\x03 \x01(\x0b\x32\x15.gateway.ModelStartedH\x00\x12\x30\n\x0emodel_finished\x18\x04 \x01(\x0b\x32\x16.gateway.ModelFinishedH\x00\x12,\n\x0ctool_started\x18\x05 \x01(\x0b\x32\x14.gateway.ToolStartedH\x00\x12.\n\rtool_finished\x18\x06 \x01(\x0b\x32\x15.gateway.ToolFinishedH\x00\x12.\n\rrun_completed\x18\x07 \x01(\x0b\x32\x15.gateway.RunCompletedH\x00\x12(\n\nrun_failed\x18\x08 \x01(\x0b\x32\x12.gateway.RunFailedH\x00\x42\x07\n\x05\x65vent\"\x1c\n\nRunStarted\x12\x0e\n\x06prompt\x18\x01 \x01(\t\"7\n\x0cModelStarted\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x13\n\x0bstep_number\x18\x02 \x01(\x05\"F\n\x08ToolCall\x12\x14\n\x0ctool_call_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x16\n\x0e\x61rguments_json\x18\x03 \x01(\t\"D\n\rModelFinished\x12\x0c\n\x04text\x18\x01 \x01(\t\x12%\n\ntool_calls\x18\x02 \x03(\x0b\x32\x11.gateway.ToolCall\"I\n\x0bToolStarted\x12\x14\n\x0ctool_call_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x16\n\x0e\x61rguments_json\x18\x03 \x01(\t\"N\n\x0cToolFinished\x12\x14\n\x0ctool_call_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0e\n\x06output\x18\x03 \x01(\t\x12\n\n\x02ok\x18\x04 \x01(\x08\"\"\n\x0cRunCompleted\x12\x12\n\nfinal_text\x18\x01 \x01(\t\"\x1c\n\tRunFailed\x12\x0f\n\x07message\x18\x01 \x01(\t*-\n\tEventType\x12\x10\n\x0cPROMPT_EVENT\x10\x00\x12\x0e\n\nTOOL_EVENT\x10\x01*_\n\nStatusType\x12\x16\n\x12STATUS_UNSPECIFIED\x10\x00\x12\x11\n\rSTATUS_ACTIVE\x10\x01\x12\x13\n\x0fSTATUS_DEFERRED\x10\x02\x12\x11\n\rSTATUS_FAILED\x10\x03\x32\xbf\x01\n\rAttilaGateway\x12\x39\n\x06Health\x12\x16.gateway.HealthRequest\x1a\x17.gateway.HealthResponse\x12;\n\nSubmitTask\x12\x14.gateway.TaskRequest\x1a\x15.gateway.TaskResponse0\x01\x12\x36\n\x08RunAgent\x12\x13.gateway.RunRequest\x1a\x13.gateway.AgentEvent0\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rgateway.proto\x12\x07gateway\"#\n\rHealthRequest\x12\x12\n\nrequest_id\x18\x01 \x01(\t\"5\n\x0eHealthResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.gateway.StatusType\"n\n\rClientMessage\x12*\n\x0brun_request\x18\x01 \x01(\x0b\x32\x13.gateway.RunRequestH\x00\x12*\n\x0btool_result\x18\x02 \x01(\x0b\x32\x13.gateway.ToolResultH\x00\x42\x05\n\x03msg\">\n\nToolResult\x12\x14\n\x0ctool_call_id\x18\x01 \x01(\t\x12\x0e\n\x06output\x18\x02 \x01(\t\x12\n\n\x02ok\x18\x03 \x01(\x08\",\n\nRunRequest\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x0e\n\x06prompt\x18\x02 \x01(\t\"\xeb\x02\n\nAgentEvent\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12*\n\x0brun_started\x18\x02 \x01(\x0b\x32\x13.gateway.RunStartedH\x00\x12.\n\rmodel_started\x18\x03 \x01(\x0b\x32\x15.gateway.ModelStartedH\x00\x12\x30\n\x0emodel_finished\x18\x04 \x01(\x0b\x32\x16.gateway.ModelFinishedH\x00\x12,\n\x0ctool_started\x18\x05 \x01(\x0b\x32\x14.gateway.ToolStartedH\x00\x12.\n\rtool_finished\x18\x06 \x01(\x0b\x32\x15.gateway.ToolFinishedH\x00\x12.\n\rrun_completed\x18\x07 \x01(\x0b\x32\x15.gateway.RunCompletedH\x00\x12(\n\nrun_failed\x18\x08 \x01(\x0b\x32\x12.gateway.RunFailedH\x00\x42\x07\n\x05\x65vent\"\x1c\n\nRunStarted\x12\x0e\n\x06prompt\x18\x01 \x01(\t\"7\n\x0cModelStarted\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x13\n\x0bstep_number\x18\x02 \x01(\x05\"F\n\x08ToolCall\x12\x14\n\x0ctool_call_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x16\n\x0e\x61rguments_json\x18\x03 \x01(\t\"D\n\rModelFinished\x12\x0c\n\x04text\x18\x01 \x01(\t\x12%\n\ntool_calls\x18\x02 \x03(\x0b\x32\x11.gateway.ToolCall\"I\n\x0bToolStarted\x12\x14\n\x0ctool_call_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x16\n\x0e\x61rguments_json\x18\x03 \x01(\t\"N\n\x0cToolFinished\x12\x14\n\x0ctool_call_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0e\n\x06output\x18\x03 \x01(\t\x12\n\n\x02ok\x18\x04 \x01(\x08\"\"\n\x0cRunCompleted\x12\x12\n\nfinal_text\x18\x01 \x01(\t\"\x1c\n\tRunFailed\x12\x0f\n\x07message\x18\x01 \x01(\t\"D\n\x0cTaskResponse\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0e\n\x06prompt\x18\x02 \x01(\t\x12\x10\n\x08response\x18\x03 \x01(\t\"T\n\x0bTaskRequest\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\x12 \n\x04type\x18\x03 \x01(\x0e\x32\x12.gateway.EventType*_\n\nStatusType\x12\x16\n\x12STATUS_UNSPECIFIED\x10\x00\x12\x11\n\rSTATUS_ACTIVE\x10\x01\x12\x13\n\x0fSTATUS_DEFERRED\x10\x02\x12\x11\n\rSTATUS_FAILED\x10\x03*-\n\tEventType\x12\x10\n\x0cPROMPT_EVENT\x10\x00\x12\x0e\n\nTOOL_EVENT\x10\x01\x32\xc4\x01\n\rAttilaGateway\x12\x39\n\x06Health\x12\x16.gateway.HealthRequest\x1a\x17.gateway.HealthResponse\x12;\n\nSubmitTask\x12\x14.gateway.TaskRequest\x1a\x15.gateway.TaskResponse0\x01\x12;\n\x08RunAgent\x12\x16.gateway.ClientMessage\x1a\x13.gateway.AgentEvent(\x01\x30\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'gateway_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_EVENTTYPE']._serialized_start=1136
-  _globals['_EVENTTYPE']._serialized_end=1181
-  _globals['_STATUSTYPE']._serialized_start=1183
-  _globals['_STATUSTYPE']._serialized_end=1278
+  _globals['_STATUSTYPE']._serialized_start=1312
+  _globals['_STATUSTYPE']._serialized_end=1407
+  _globals['_EVENTTYPE']._serialized_start=1409
+  _globals['_EVENTTYPE']._serialized_end=1454
   _globals['_HEALTHREQUEST']._serialized_start=26
   _globals['_HEALTHREQUEST']._serialized_end=61
   _globals['_HEALTHRESPONSE']._serialized_start=63
   _globals['_HEALTHRESPONSE']._serialized_end=116
-  _globals['_TASKRESPONSE']._serialized_start=118
-  _globals['_TASKRESPONSE']._serialized_end=186
-  _globals['_TASKREQUEST']._serialized_start=188
-  _globals['_TASKREQUEST']._serialized_end=272
-  _globals['_RUNREQUEST']._serialized_start=274
-  _globals['_RUNREQUEST']._serialized_end=318
-  _globals['_AGENTEVENT']._serialized_start=321
-  _globals['_AGENTEVENT']._serialized_end=684
-  _globals['_RUNSTARTED']._serialized_start=686
-  _globals['_RUNSTARTED']._serialized_end=714
-  _globals['_MODELSTARTED']._serialized_start=716
-  _globals['_MODELSTARTED']._serialized_end=771
-  _globals['_TOOLCALL']._serialized_start=773
-  _globals['_TOOLCALL']._serialized_end=843
-  _globals['_MODELFINISHED']._serialized_start=845
-  _globals['_MODELFINISHED']._serialized_end=913
-  _globals['_TOOLSTARTED']._serialized_start=915
-  _globals['_TOOLSTARTED']._serialized_end=988
-  _globals['_TOOLFINISHED']._serialized_start=990
-  _globals['_TOOLFINISHED']._serialized_end=1068
-  _globals['_RUNCOMPLETED']._serialized_start=1070
-  _globals['_RUNCOMPLETED']._serialized_end=1104
-  _globals['_RUNFAILED']._serialized_start=1106
-  _globals['_RUNFAILED']._serialized_end=1134
-  _globals['_ATTILAGATEWAY']._serialized_start=1281
-  _globals['_ATTILAGATEWAY']._serialized_end=1472
+  _globals['_CLIENTMESSAGE']._serialized_start=118
+  _globals['_CLIENTMESSAGE']._serialized_end=228
+  _globals['_TOOLRESULT']._serialized_start=230
+  _globals['_TOOLRESULT']._serialized_end=292
+  _globals['_RUNREQUEST']._serialized_start=294
+  _globals['_RUNREQUEST']._serialized_end=338
+  _globals['_AGENTEVENT']._serialized_start=341
+  _globals['_AGENTEVENT']._serialized_end=704
+  _globals['_RUNSTARTED']._serialized_start=706
+  _globals['_RUNSTARTED']._serialized_end=734
+  _globals['_MODELSTARTED']._serialized_start=736
+  _globals['_MODELSTARTED']._serialized_end=791
+  _globals['_TOOLCALL']._serialized_start=793
+  _globals['_TOOLCALL']._serialized_end=863
+  _globals['_MODELFINISHED']._serialized_start=865
+  _globals['_MODELFINISHED']._serialized_end=933
+  _globals['_TOOLSTARTED']._serialized_start=935
+  _globals['_TOOLSTARTED']._serialized_end=1008
+  _globals['_TOOLFINISHED']._serialized_start=1010
+  _globals['_TOOLFINISHED']._serialized_end=1088
+  _globals['_RUNCOMPLETED']._serialized_start=1090
+  _globals['_RUNCOMPLETED']._serialized_end=1124
+  _globals['_RUNFAILED']._serialized_start=1126
+  _globals['_RUNFAILED']._serialized_end=1154
+  _globals['_TASKRESPONSE']._serialized_start=1156
+  _globals['_TASKRESPONSE']._serialized_end=1224
+  _globals['_TASKREQUEST']._serialized_start=1226
+  _globals['_TASKREQUEST']._serialized_end=1310
+  _globals['_ATTILAGATEWAY']._serialized_start=1457
+  _globals['_ATTILAGATEWAY']._serialized_end=1653
 # @@protoc_insertion_point(module_scope)

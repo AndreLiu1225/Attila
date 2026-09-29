@@ -44,9 +44,9 @@ class AttilaGatewayStub:
                 request_serializer=gateway__pb2.TaskRequest.SerializeToString,
                 response_deserializer=gateway__pb2.TaskResponse.FromString,
                 _registered_method=True)
-        self.RunAgent = channel.unary_stream(
+        self.RunAgent = channel.stream_stream(
                 '/gateway.AttilaGateway/RunAgent',
-                request_serializer=gateway__pb2.RunRequest.SerializeToString,
+                request_serializer=gateway__pb2.ClientMessage.SerializeToString,
                 response_deserializer=gateway__pb2.AgentEvent.FromString,
                 _registered_method=True)
 
@@ -67,7 +67,7 @@ class AttilaGatewayServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RunAgent(self, request, context):
+    def RunAgent(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -86,9 +86,9 @@ def add_AttilaGatewayServicer_to_server(servicer, server):
                     request_deserializer=gateway__pb2.TaskRequest.FromString,
                     response_serializer=gateway__pb2.TaskResponse.SerializeToString,
             ),
-            'RunAgent': grpc.unary_stream_rpc_method_handler(
+            'RunAgent': grpc.stream_stream_rpc_method_handler(
                     servicer.RunAgent,
-                    request_deserializer=gateway__pb2.RunRequest.FromString,
+                    request_deserializer=gateway__pb2.ClientMessage.FromString,
                     response_serializer=gateway__pb2.AgentEvent.SerializeToString,
             ),
     }
@@ -157,7 +157,7 @@ class AttilaGateway:
             _registered_method=True)
 
     @staticmethod
-    def RunAgent(request,
+    def RunAgent(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -167,11 +167,11 @@ class AttilaGateway:
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(
-            request,
+        return grpc.experimental.stream_stream(
+            request_iterator,
             target,
             '/gateway.AttilaGateway/RunAgent',
-            gateway__pb2.RunRequest.SerializeToString,
+            gateway__pb2.ClientMessage.SerializeToString,
             gateway__pb2.AgentEvent.FromString,
             options,
             channel_credentials,
