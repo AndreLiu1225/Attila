@@ -1,6 +1,6 @@
-import { useState, type ComponentProps } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import './App.css';
-import { toTimeline, useTaskResponse } from './useTaskResponse';
+import { useTaskResponse } from './useTaskResponse';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Mermaid } from './Mermaid';
@@ -27,18 +27,64 @@ export function Markdown({ markdown }: { markdown: string }) {
 }
 
 function App() {
-  const { events, error, isSubmitting, submitPrompt } = useTaskResponse();
+  const { items, error, isSubmitting, submitPrompt } = useTaskResponse();
   const [prompt, setPrompt] = useState('');
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  const stickToBottom = useRef(true);
+
+  useEffect(() => {
+    const transcript = transcriptRef.current;
+    if (transcript && stickToBottom.current) {
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+  }, [items]);
+
+  function handleScroll() {
+    const transcript = transcriptRef.current;
+    if (!transcript) {
+      return;
+    }
+    const distanceFromBottom =
+      transcript.scrollHeight - transcript.scrollTop - transcript.clientHeight;
+    stickToBottom.current = distanceFromBottom < 80;
+  }
 
   const handlePromptSubmit: NonNullable<ComponentProps<'form'>['onSubmit']> = async (event) => {
     event.preventDefault();
-    await submitPrompt(prompt);
+    const sent = prompt;
+    setPrompt('');
+    stickToBottom.current = true;
+    await submitPrompt(sent);
   };
 
   return (
     <div className="App">
       <Header />
-      <section className="promptSection">
+      <section className="chat">
+        <div className="transcript" ref={transcriptRef} onScroll={handleScroll}>
+          {items.map((item) => {
+            if (item.kind === 'user') {
+              return (
+                <article key={item.id} className="bubble user">
+                  <p>{item.text}</p>
+                </article>
+              );
+            }
+            if (item.kind === 'tool') {
+              return (
+                <details key={item.id} className="toolRow" open={item.pending}>
+                  <summary>{item.pending ? 'Searching…' : item.label}</summary>
+                  {item.output && <pre className="toolOutput">{item.output}</pre>}
+                </details>
+              );
+            }
+            return (
+              <article key={item.id} className="bubble agent">
+                <Markdown markdown={item.markdown} />
+              </article>
+            );
+          })}
+        </div>
         <form className="promptForm" onSubmit={handlePromptSubmit}>
           <input
             className="promptInput"
@@ -53,20 +99,6 @@ function App() {
           </button>
         </form>
         {error && <p className="promptError">{error}</p>}
-        {events.length > 0 && (
-          <div className="promptResponses">
-            {toTimeline(events).map((item, index) =>
-              item.kind === 'tool' ? (
-                <details key={item.id} className="toolRow" open={item.pending}>
-                  <summary>{item.pending ? 'Searching…' : item.label}</summary>
-                  {item.output && <pre className="toolOutput">{item.output}</pre>}
-                </details>
-              ) : (
-                <Markdown key={`answer-${index}`} markdown={item.markdown} />
-              )
-            )}
-          </div>
-        )}
       </section>
     </div>
   );

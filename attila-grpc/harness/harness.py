@@ -21,12 +21,12 @@ TOOL_SCHEMAS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {
+                    "cmd": {
                         "type": "string",
-                        "description": "The bash command to run",
+                        "description": "The bash command to run, for example ls -R",
                     }
                 },
-                "required": ["query"],
+                "required": ["cmd"],
             },
         },
     },

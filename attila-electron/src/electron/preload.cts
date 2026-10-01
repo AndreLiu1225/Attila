@@ -13,6 +13,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
     sendFrameAction: (payload) => ipcSend('sendFrameAction', payload),
     getHealthResponse: () => ipcInvoke('getHealthResponse'),
     runAgent: (prompt) => ipcInvoke('runAgent', { prompt }),
+    subscribeAgentEvents: (callback) => ipcOn('agentEvent', callback),
 } satisfies Window['electron']);
 
 function ipcInvoke<Key extends keyof EventPayloadMapping>(

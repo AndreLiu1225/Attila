@@ -1,58 +1,14 @@
-import { useState } from 'react';
-
-type TimelineItem = 
-    | {
-        kind: 'tool';
-        id: string;
-        label: string;
-        output?: string;
-        pending: boolean;
-    }
-    | {
-        kind: 'answer';
-        markdown: string;
-    };
-
-export function toTimeline(events: AgentEvent[]): TimelineItem[] {
-    const items: TimelineItem[] = [];
-
-    for (const event of events) {
-    if (event.event === 'tool_started' && event.tool_started) {
-        items.push({
-            kind: 'tool',
-            id: event.tool_started.tool_call_id,
-            label: toolLabel(event.tool_started.name, event.tool_started.arguments_json),
-            pending: true,
-        });
-    }
-    if (event.event === 'tool_finished' && event.tool_finished) {
-        const row = items.find(
-            (item) => item.kind === 'tool' && item.id === event.tool_finished?.tool_call_id
-        );
-        if (row && row.kind === 'tool') {
-            row.output = event.tool_finished.output;
-            row.pending = false;
-        }
-    }
-    if (event.event === 'run_completed') {
-        items.push({
-            kind: 'answer',
-            markdown: event.run_completed?.final_text ?? '',
-        });
-    }
-    }
-    return items;
-}
+import { useEffect, useState } from 'react';
 
 function toolLabel(name: string, argumentsJson: string): string {
-    const args = JSON.parse(argumentsJson || '{}') as { query?: string };
+    const args = JSON.parse(argumentsJson || '{}') as { query?: string; cmd?: string };
 
     if (name === 'web_search') {
         return `Searched the web for "${args.query ?? ''}"`;
     }
 
     if (name === 'bash') {
-        return `Ran \`${args.query ?? ''}\``;
+        return `Ran \`${args.cmd ?? ''}\``;
     }
 
     return `Used ${name}`;
@@ -85,9 +41,49 @@ export function formatAgentEvent(event: AgentEvent): string {
 }
 
 export function useTaskResponse() {
-    const [events, setEvents] = useState<AgentEvent[]>([]);
+    const [items, setItems] = useState<ChatItem[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        return window.electron.subscribeAgentEvents((event) => {
+            if (event.event === 'tool_started' && event.tool_started) {
+                const started = event.tool_started;
+                setItems((prev) => [
+                    ...prev,
+                    {
+                        kind: 'tool',
+                        id: started.tool_call_id,
+                        label: toolLabel(started.name, started.arguments_json),
+                        pending: true,
+                    },
+                ]);
+            }
+            if (event.event === 'tool_finished' && event.tool_finished) {
+                const finished = event.tool_finished;
+                setItems((prev) =>
+                    prev.map((item) =>
+                        item.kind === 'tool' && item.id === finished.tool_call_id
+                            ? { ...item, output: finished.output, pending: false }
+                            : item,
+                    ),
+                );
+            }
+            if (event.event === 'run_completed') {
+                setItems((prev) => [
+                    ...prev,
+                    {
+                        kind: 'answer',
+                        id: crypto.randomUUID(),
+                        markdown: event.run_completed?.final_text ?? '',
+                    },
+                ]);
+            }
+            if (event.event === 'run_failed') {
+                setError(event.run_failed?.message ?? 'Run failed');
+            }
+        });
+    }, []);
 
     async function submitPrompt(content: string) {
         const trimmedPrompt = content.trim();
@@ -97,25 +93,23 @@ export function useTaskResponse() {
 
         setIsSubmitting(true);
         setError(null);
-        setEvents([]);
+        setItems((prev) => [
+            ...prev,
+            { kind: 'user', id: crypto.randomUUID(), text: trimmedPrompt },
+        ]);
 
         try {
-            const agentEvents = await window.electron.runAgent(trimmedPrompt);
-            setEvents(agentEvents);
-            const failed = agentEvents.find((event) => event.event === 'run_failed');
-            if (failed?.run_failed?.message) {
-                setError(failed.run_failed.message);
-            }
+            await window.electron.runAgent(trimmedPrompt);
         } catch (submitError) {
             setError(
                 submitError instanceof Error
                     ? submitError.message
-                    : 'Failed to run agent'
+                    : 'Failed to run agent',
             );
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    return { events, error, isSubmitting, submitPrompt };
+    return { items, error, isSubmitting, submitPrompt };
 }

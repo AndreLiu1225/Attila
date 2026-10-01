@@ -1,5 +1,5 @@
-import { app, BrowserWindow } from 'electron';
-import { ipcMainHandle, ipcMainOn, isDev } from './util.js';
+import { app, BrowserWindow, ipcMain } from 'electron';
+import { ipcMainHandle, ipcMainOn, ipcWebContentsSend, isDev, validateEventFrame } from './util.js';
 import { getStaticData, pollResources } from './resourceManager.js';
 import { getPreloadPath, getUIPath } from './pathResolver.js';
 import { createTray } from './tray.js';
@@ -29,9 +29,12 @@ app.on('ready', async () => {
         return getHealthResponse();
     });
 
-    ipcMainHandle('runAgent', (payload) => {
+    ipcMain.handle('runAgent', (event, payload) => {
+        validateEventFrame(event.senderFrame!);
         const request = payload as { prompt: string };
-        return runAgent(request.prompt);
+        return runAgent(request.prompt, (agentEvent) => {
+            ipcWebContentsSend('agentEvent', event.sender, agentEvent);
+        });
     });
 
     ipcMainOn('sendFrameAction', (payload) => {

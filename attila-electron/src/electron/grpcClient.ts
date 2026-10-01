@@ -16,7 +16,30 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     oneofs: true,
 });
 
-const gatewayProto = grpc.loadPackageDefinition(packageDefinition).gateway as any;
+type AgentStream = {
+    on(event: 'data', listener: (event: AgentEvent) => void): void;
+    on(event: 'error', listener: (error: Error) => void): void;
+    on(event: 'end', listener: () => void): void;
+    write(message: {
+        run_request?: { run_id: string; prompt: string };
+        tool_result?: { tool_call_id: string; output: string; ok: boolean };
+    }): void;
+};
+
+type GatewayClient = {
+    Health(
+        request: { request_id: string },
+        callback: (error: Error | null, response: HealthResponse) => void,
+    ): void;
+    RunAgent(): AgentStream;
+};
+
+const gatewayProto = grpc.loadPackageDefinition(packageDefinition).gateway as unknown as {
+    AttilaGateway: new (
+        address: string,
+        credentials: grpc.ChannelCredentials,
+    ) => GatewayClient;
+};
 
 function createClient() {
     return new gatewayProto.AttilaGateway(
@@ -36,44 +59,46 @@ export async function getHealthResponse(): Promise<HealthResponse> {
     });
 }
 
-export async function runAgent(prompt: string): Promise<AgentEvent[]> {
+export function runAgent(
+    prompt: string,
+    onEvent: (event: AgentEvent) => void,
+): Promise<void> {
     const client = createClient();
 
-    return new Promise<AgentEvent[]>((resolve, reject) => {
-        const events: AgentEvent[] = [];
+    return new Promise((resolve, reject) => {
         const stream = client.RunAgent();
 
         stream.on('data', async (event: AgentEvent) => {
-            events.push(event);
+            onEvent(event);
 
-            if (event.event === "tool_started" && event.tool_started?.name === 'bash') {
-                const args = JSON.parse(event.tool_started.arguments_json || '{}') as { query?: string };
-                const result = await runBash(args.query ?? '');
+            if (event.event === 'tool_started' && event.tool_started?.name === 'bash') {
+                const args = JSON.parse(event.tool_started.arguments_json || '{}') as { cmd?: string };
+                const result = await runBash(args.cmd ?? '');
                 stream.write({
                     tool_result: {
                         tool_call_id: event.tool_started.tool_call_id,
                         output: result.output,
-                        ok: result.ok
-                    }
+                        ok: result.ok,
+                    },
                 });
             }
         });
 
         stream.on('error', reject);
-        stream.on('end', () => resolve(events));
+        stream.on('end', () => resolve());
 
         stream.write({
             run_request: {
                 run_id: randomUUID(),
                 prompt,
-            }
-        })
+            },
+        });
     });
 }
 
 function runBash(command: string): Promise<{ output: string; ok: boolean }> {
   return new Promise((resolve) => {
-    const child = spawn('bash', ['-lc', command], { cwd: process.cwd() });
+    const child = spawn('bash', ['-lc', command], { cwd: process.cwd() },);
     let output = '';
     const append = (chunk: Buffer) => {
       output = (output + chunk.toString()).slice(0, 8000);

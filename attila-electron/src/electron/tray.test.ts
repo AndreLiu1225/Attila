@@ -1,6 +1,6 @@
-import { expect, Mock, test, vi } from 'vitest';
+import { expect, test, vi, type Mock } from 'vitest';
 import { createTray } from './tray.js';
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, Menu, type BrowserWindow } from 'electron';
 
 vi.mock('./pathResolver.js', () => ({
   getAssetPath: vi.fn().mockReturnValue('/assets'),
@@ -33,7 +33,7 @@ vi.mock('electron', () => {
 
 const mainWindow = {
   show: vi.fn(),
-} satisfies Partial<BrowserWindow> as BrowserWindow;
+} as unknown as BrowserWindow;
 
 test('tray context menu Show and Quit handlers work', () => {
   createTray(mainWindow);

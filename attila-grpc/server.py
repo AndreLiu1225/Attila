@@ -1,12 +1,61 @@
-import grpc
-from concurrent import futures
-import time
+import psycopg2
+
 import gateway_pb2
 import gateway_pb2_grpc
 from harness.harness import run_tool, call_model
 
+import grpc
+from concurrent import futures
+import threading
+import time
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# One chat until RunRequest carries its own conversation id.
+# Electron currently sends a new run_id for every prompt, so run_id cannot
+# be used to reload earlier turns.
+# Keep this a string. psycopg2 cannot adapt uuid.UUID unless an adapter is registered.
+CONVERSATION_ID = "00000000-0000-0000-0000-000000000001"
 
 class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
+    def __init__(self):
+        self.conn = psycopg2.connect(
+            host=os.getenv("DB_HOST"),
+            port=int(os.getenv("DB_PORT")),
+            database=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+        )
+        self.conn.autocommit = True
+        self.db_lock = threading.Lock()
+
+    def load_context(self, conversation_id):
+        with self.db_lock, self.conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT sender, content
+                FROM messages
+                WHERE conversation_id = %s
+                ORDER BY created_at, id
+                """,
+                (conversation_id,),
+            )
+            rows = cur.fetchall()
+        roles = {"client": "user", "agent": "assistant"}
+        return [{"role": roles[sender], "content": content} for sender, content in rows]
+
+    def save_message(self, conversation_id, sender, content):
+        with self.db_lock, self.conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO messages (conversation_id, sender, content)
+                VALUES (%s, %s, %s)
+                """,
+                (conversation_id, sender, content),
+            )
+
     def Health(self, request, context):
         return gateway_pb2.HealthResponse(
             status=gateway_pb2.StatusType.STATUS_ACTIVE
@@ -35,7 +84,10 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
             return
 
         request = incoming.run_request
-        messages = [{"role": "user", "content": request.prompt}]
+        # Prior turns from attiladb, then this prompt. call_model sees the whole chat.
+        messages = self.load_context(CONVERSATION_ID)
+        messages.append({"role": "user", "content": request.prompt})
+        self.save_message(CONVERSATION_ID, "client", request.prompt)
 
         for step in range(1, 10):
             yield gateway_pb2.AgentEvent(
@@ -57,7 +109,8 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
             )
 
             if not reply.tool_calls:
-                # This is the model's final answer. return and close the bidirectional stream.
+                # This is the model's final answer. Save it so the next run can load it.
+                self.save_message(CONVERSATION_ID, "agent", reply.text)
                 yield gateway_pb2.AgentEvent(
                     run_id=request.run_id,
                     run_completed=gateway_pb2.RunCompleted(final_text=reply.text)

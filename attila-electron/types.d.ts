@@ -41,6 +41,11 @@ type AgentEvent = {
     run_failed?: { message: string };
 };
 
+type ChatItem =
+    | { kind: 'user'; id: string; text: string }
+    | { kind: 'tool'; id: string; label: string; output?: string; pending: boolean }
+    | { kind: 'answer'; id: string; markdown: string };
+
 type View = 'CPU' | 'RAM' | 'STORAGE';
 
 type FrameWindowAction = 'CLOSE' | 'MAXIMIZE' | 'MINIMIZE';
@@ -51,7 +56,8 @@ type EventPayloadMapping = {
     changeView: View;
     sendFrameAction: FrameWindowAction;
     getHealthResponse: HealthResponse;
-    runAgent: AgentEvent[];
+    runAgent: void;
+    agentEvent: AgentEvent;
 };
 
 type UnsubscribeFunction = () => void;
@@ -67,6 +73,7 @@ interface Window {
         ) => UnsubscribeFunction;
         sendFrameAction: (payload: FrameWindowAction) => void;
         getHealthResponse: () => Promise<HealthResponse>;
-        runAgent: (prompt: string) => Promise<AgentEvent[]>;
+        runAgent: (prompt: string) => Promise<void>;
+        subscribeAgentEvents: (callback: (event: AgentEvent) => void) => UnsubscribeFunction;
     };
 }
