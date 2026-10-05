@@ -13,8 +13,9 @@ Attila could be seen as a stepping stone for other developers interested in deve
 # References
 You may find it useful to replicate this project with these tutorials:
 
-- MissCoding's exceptionally concise youtube tutorial explaining how to get started with gRPC: https://www.youtube.com/watch?v=WB37L7PjI5k&t=158s
-- Also freeCodeCamp.org for their comprehensive guide on how to get started with Electron: https://www.youtube.com/watch?v=fP-371MN0Ck&t=10521s
+- [MissCoding's exceptionally concise youtube tutorial explaining how to get started with gRPC](https://www.youtube.com/watch?v=WB37L7PjI5k&t=158s)
+- [Also freeCodeCamp.org for their comprehensive guide on how to get started with Electron](https://www.youtube.com/watch?)v=fP-371MN0Ck&t=10521s
+- [To understand how context compaction works in Attila and in general, especially how to decide when compaction should occur, which older messages should be summarized, where the retained-message boundary should be placed, and how to preserve a recent verbatim tail while replacing earlier context with a structured checkpoint, please refer to BibGenie’s guide on agent context compaction.](https://www.bibgenie.com/blog/agent-context-compaction) 
 
 
 # Usage
