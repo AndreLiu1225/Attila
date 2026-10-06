@@ -58,12 +58,15 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
             try:
                 with self.conn.cursor() as cur:
                     for message in messages:
+                        sender = {"user": "client", "assistant": "agent", "tool": "tool"}.get(
+                            message.get("role"), "agent"
+                        )
                         cur.execute(
                             """
-                            INSERT INTO messages (conversation_id, message)
-                            VALUES (%s, %s)
+                            INSERT INTO messages (conversation_id, sender, content, message)
+                            VALUES (%s, %s, %s, %s)
                             """,
-                            (conversation_id, Json(message)),
+                            (conversation_id, sender, message.get("content"), Json(message)),
                         )
                 self.conn.commit()
             except Exception:

@@ -4,6 +4,11 @@ Attila is a side project aiming to explore the development of Agentic AI Applica
 
 # Overview
 Attila could be seen as a stepping stone for other developers interested in developing their own Agentic AI Applications. It features a gRPC backend found in `attila-grpc/` and an Electron frontend found in `attila-electron/`. The architecture features a *bidirectional stream* defined in the protobuf file `./protos/gateway.proto` under the function `rpc RunAgent(stream Client) returns (stream AgentEvent)`. The reason for setting up a bidirectional stream is so that command outputs could be sent back to the *agent harness* for further generation of commands if needed.
+![UI Example](docs/images/Ui.png)
+
+# Architecture Illustrations
+![Sequence Diagram](docs/images/sequence_diagram.png)
+![Architecture Diagram](docs/images/architecture_diagram.png)
 
 # Functional Requirements (Implemented)
 - As a user, I'm able to run browser search tasks.
