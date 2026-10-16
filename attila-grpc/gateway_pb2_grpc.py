@@ -39,15 +39,15 @@ class AttilaGatewayStub:
                 request_serializer=gateway__pb2.HealthRequest.SerializeToString,
                 response_deserializer=gateway__pb2.HealthResponse.FromString,
                 _registered_method=True)
-        self.SubmitTask = channel.unary_stream(
-                '/gateway.AttilaGateway/SubmitTask',
-                request_serializer=gateway__pb2.TaskRequest.SerializeToString,
-                response_deserializer=gateway__pb2.TaskResponse.FromString,
-                _registered_method=True)
         self.RunAgent = channel.stream_stream(
                 '/gateway.AttilaGateway/RunAgent',
                 request_serializer=gateway__pb2.ClientMessage.SerializeToString,
                 response_deserializer=gateway__pb2.AgentEvent.FromString,
+                _registered_method=True)
+        self.ListMessages = channel.unary_unary(
+                '/gateway.AttilaGateway/ListMessages',
+                request_serializer=gateway__pb2.ListMessagesRequest.SerializeToString,
+                response_deserializer=gateway__pb2.ListMessagesResponse.FromString,
                 _registered_method=True)
 
 
@@ -60,14 +60,13 @@ class AttilaGatewayServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SubmitTask(self, request, context):
-        """Test Method
-        """
+    def RunAgent(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RunAgent(self, request_iterator, context):
+    def ListMessages(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -81,15 +80,15 @@ def add_AttilaGatewayServicer_to_server(servicer, server):
                     request_deserializer=gateway__pb2.HealthRequest.FromString,
                     response_serializer=gateway__pb2.HealthResponse.SerializeToString,
             ),
-            'SubmitTask': grpc.unary_stream_rpc_method_handler(
-                    servicer.SubmitTask,
-                    request_deserializer=gateway__pb2.TaskRequest.FromString,
-                    response_serializer=gateway__pb2.TaskResponse.SerializeToString,
-            ),
             'RunAgent': grpc.stream_stream_rpc_method_handler(
                     servicer.RunAgent,
                     request_deserializer=gateway__pb2.ClientMessage.FromString,
                     response_serializer=gateway__pb2.AgentEvent.SerializeToString,
+            ),
+            'ListMessages': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListMessages,
+                    request_deserializer=gateway__pb2.ListMessagesRequest.FromString,
+                    response_serializer=gateway__pb2.ListMessagesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -130,33 +129,6 @@ class AttilaGateway:
             _registered_method=True)
 
     @staticmethod
-    def SubmitTask(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(
-            request,
-            target,
-            '/gateway.AttilaGateway/SubmitTask',
-            gateway__pb2.TaskRequest.SerializeToString,
-            gateway__pb2.TaskResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
     def RunAgent(request_iterator,
             target,
             options=(),
@@ -173,6 +145,33 @@ class AttilaGateway:
             '/gateway.AttilaGateway/RunAgent',
             gateway__pb2.ClientMessage.SerializeToString,
             gateway__pb2.AgentEvent.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListMessages(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/gateway.AttilaGateway/ListMessages',
+            gateway__pb2.ListMessagesRequest.SerializeToString,
+            gateway__pb2.ListMessagesResponse.FromString,
             options,
             channel_credentials,
             insecure,

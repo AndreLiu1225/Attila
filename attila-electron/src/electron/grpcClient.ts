@@ -7,6 +7,7 @@ import { spawn } from 'child_process';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const PROTO_PATH = path.join(dir, '../../attila-grpc/protos/gateway.proto');
+const CONVERSATION_ID = '00000000-0000-0000-0000-000000000001';
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     keepCase: true,
@@ -30,6 +31,10 @@ type GatewayClient = {
     Health(
         request: { request_id: string },
         callback: (error: Error | null, response: HealthResponse) => void,
+    ): void;
+    ListMessages(
+        request: { conversation_id: string },
+        callback: (error: Error | null, response: ListMessagesResponse) => void,
     ): void;
     RunAgent(): AgentStream;
 };
@@ -56,6 +61,20 @@ export async function getHealthResponse(): Promise<HealthResponse> {
             if (err) reject(err);
             else resolve(response);
         });
+    });
+}
+
+export async function getListMessagesReponse(): Promise<ListMessagesResponse> {
+    const client = createClient();
+
+    return new Promise((resolve, reject) => {
+        client.ListMessages(
+            { conversation_id: CONVERSATION_ID },
+            (err: Error | null, response: ListMessagesResponse) => {
+                if (err) reject(err);
+                else resolve(response);
+            },
+        );
     });
 }
 

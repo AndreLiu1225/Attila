@@ -47,7 +47,7 @@ def call_model(messages: list) -> ModelReply:
         messages=messages,
         tools=TOOL_SCHEMAS,
         tool_choice="auto",
-        reasoning_effort="low",
+        reasoning_effort="high",
         # On-demand OTPM for this model is 1000. Groq reserves max_completion_tokens
         # up front, and the unset default (1222) is already over the limit.
         # 480 leaves room for a tool call and a follow-up answer in the same minute.

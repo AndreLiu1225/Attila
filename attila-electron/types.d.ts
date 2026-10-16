@@ -14,6 +14,16 @@ type HealthResponse = {
     status: string;
 };
 
+type StoredMessage = {
+    id: string;
+    sender: string;
+    content: string;
+}
+
+type ListMessagesResponse = {
+    messages: StoredMessage[];
+}
+
 type ToolCall = {
     tool_call_id: string;
     name: string;
@@ -56,6 +66,7 @@ type EventPayloadMapping = {
     changeView: View;
     sendFrameAction: FrameWindowAction;
     getHealthResponse: HealthResponse;
+    getListMessagesResponse: ListMessagesResponse;
     runAgent: void;
     agentEvent: AgentEvent;
 };
@@ -73,6 +84,7 @@ interface Window {
         ) => UnsubscribeFunction;
         sendFrameAction: (payload: FrameWindowAction) => void;
         getHealthResponse: () => Promise<HealthResponse>;
+        getListMessagesResponse(): Promise<ListMessagesResponse>;
         runAgent: (prompt: string) => Promise<void>;
         subscribeAgentEvents: (callback: (event: AgentEvent) => void) => UnsubscribeFunction;
     };

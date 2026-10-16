@@ -5,10 +5,9 @@ package gateway;
 service AttilaGateway {
     rpc Health(HealthRequest) returns (HealthResponse);
 
-    // Test Method
-    rpc SubmitTask(TaskRequest) returns (stream TaskResponse);
-
     rpc RunAgent(stream ClientMessage) returns (stream AgentEvent);
+
+    rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
 }
 
 message HealthRequest {
@@ -19,7 +18,6 @@ message HealthResponse {
     StatusType status = 1;
 }
 
-//*************************Actual Types****************************/
 enum StatusType {
     STATUS_UNSPECIFIED = 0;
     STATUS_ACTIVE = 1;
@@ -97,22 +95,16 @@ message RunFailed {
     string message = 1;
 }
 
-// Test TaskResponse message
-message TaskResponse {
-    string request_id = 1;
-    string prompt = 2;
-    string response = 3;
+message ListMessagesRequest {
+    string conversation_id = 1;
 }
 
-// Test TaskRequest message
-message TaskRequest {
-    string request_id = 1;
-    string content = 2;
-    EventType type = 3;
+message StoredMessage {
+    int64 id = 1;
+    string sender = 2;
+    string content = 3;
 }
 
-// Test EventType enum
-enum EventType {
-    PROMPT_EVENT = 0;
-    TOOL_EVENT = 1;
+message ListMessagesResponse {
+    repeated StoredMessage messages = 1;
 }

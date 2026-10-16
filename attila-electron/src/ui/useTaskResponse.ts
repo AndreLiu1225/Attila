@@ -85,6 +85,35 @@ export function useTaskResponse() {
         });
     }, []);
 
+    useEffect(() => {
+        let ignore = false;
+        window.electron.getListMessagesResponse()
+            .then((response) => {
+                if (ignore) {
+                    return;
+                }
+                const history = response.messages.flatMap(toChatItem);
+                setItems((prev) => (prev.length === 0 ? history : prev));
+            })
+            .catch((loadError: unknown) => {
+                if (!ignore) {
+                    setError(loadError instanceof Error ? loadError.message : 'Failed to load history');
+                }
+            });
+        return () => {
+            ignore = true;
+        };
+    }, []);
+    function toChatItem(row: StoredMessage): ChatItem[] {
+        if (row.sender === 'client') {
+            return [{ kind: 'user', id: row.id, text: row.content }];
+        }
+        if (row.sender === 'agent') {
+            return [{ kind: 'answer', id: row.id, markdown: row.content }];
+        }
+        return [];
+    }
+
     async function submitPrompt(content: string) {
         const trimmedPrompt = content.trim();
         if (!trimmedPrompt || isSubmitting) {

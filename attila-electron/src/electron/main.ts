@@ -4,7 +4,7 @@ import { getStaticData, pollResources } from './resourceManager.js';
 import { getPreloadPath, getUIPath } from './pathResolver.js';
 import { createTray } from './tray.js';
 import { createMenu } from './menu.js';
-import { getHealthResponse, runAgent } from './grpcClient.js';
+import { getHealthResponse, runAgent, getListMessagesReponse } from './grpcClient.js';
 
 app.on('ready', async () => {
     const mainWindow = new BrowserWindow({
@@ -27,6 +27,10 @@ app.on('ready', async () => {
 
     ipcMainHandle('getHealthResponse', () => {
         return getHealthResponse();
+    });
+
+    ipcMainHandle('getListMessagesResponse', () => {
+        return getListMessagesReponse();
     });
 
     ipcMain.handle('runAgent', (event, payload) => {
