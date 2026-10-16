@@ -5,6 +5,12 @@ Attila is a side project aiming to explore the development of Agentic AI Applica
 # Overview
 Attila could be seen as a stepping stone for other developers interested in developing their own Agentic AI Applications. It features a gRPC backend found in `attila-grpc/` and an Electron frontend found in `attila-electron/`. The architecture features a *bidirectional stream* defined in the protobuf file `./protos/gateway.proto` under the function `rpc RunAgent(stream Client) returns (stream AgentEvent)`. The reason for setting up a bidirectional stream is so that command outputs could be sent back to the *agent harness* for further generation of commands if needed.
 
+![UI Example](docs/images/Ui.png)
+
+# Architecture Illustrations
+![Sequence Diagram](docs/images/sequence_diagram.png)
+![Architecture Diagram](docs/images/architecture_diagram.png)
+
 # Functional Requirements (Implemented)
 - As a user, I'm able to run browser search tasks.
 - As a user, I'm able to ask the agent to run any commands in my working directory.
@@ -57,6 +63,8 @@ Each new prompt is sent to Groq with a small slice of older history. The full tr
 
 ## Embedding
 `attila-grpc/harness/compaction.py` loads `Qwen/Qwen3-Embedding-0.6B` with FastEmbed. That model returns 1024 floats, which is the width of `messages.embedding`. `generate_vector` embeds the first 24,000 characters of the text. The `content` column still stores the full message. Named-entity extraction is not used: the vector width is fixed by the model, and the whole message is what similarity search should see.
+
+There is no OpenAI embeddings call. FastEmbed runs locally.
 
 ## What one run sends to the model
 `RunAgent` keeps an in-memory `messages` list because Groq does not remember the previous call. Compaction only decides how that list starts.
