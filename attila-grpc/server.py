@@ -1,6 +1,7 @@
 import gateway_pb2
 import gateway_pb2_grpc
 from harness.harness import run_tool, call_model
+from harness.compaction import Embedding
 
 import grpc
 from concurrent import futures
@@ -13,6 +14,7 @@ USER_ID = "00000000-0000-0000-0000-000000000001"
 class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
     def __init__(self):
         self.db = Database()
+        self.embedding = Embedding()
 
     def Health(self, request, context):
         return gateway_pb2.HealthResponse(
@@ -43,10 +45,20 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
 
         request = incoming.run_request
 
-        # TODO: Edit messages to be prepared context after compaction
-        messages = [{"role": Role.USER, "content": request.prompt}]
+        vector_data = self.embedding.generate_vector(request.prompt)
+        related = self.db.fetch_related_messages(CONVERSATION_ID, vector_data)
+        related.sort(key=lambda row: (row["created_at"], row["id"]))
 
-        self.db.save_message(CONVERSATION_ID, Role.CLIENT, request.prompt)
+        messages = [
+            {
+                "role": Role.USER if row["sender"] == "client" else Role.ASSISTANT, 
+                "content": row["content"],
+            }
+            for row in related
+        ]
+        messages.append({"role": Role.USER, "content": request.prompt})
+
+        self.db.save_message(CONVERSATION_ID, Role.CLIENT, request.prompt, vector_data)
 
         for step in range(1, 10):
             yield gateway_pb2.AgentEvent(
@@ -68,7 +80,9 @@ class GatewayServicer(gateway_pb2_grpc.AttilaGatewayServicer):
             )
 
             if not reply.tool_calls:
-                self.db.save_message(CONVERSATION_ID, Role.AGENT, reply.text)
+                answer_vector = self.embedding.generate_vector(reply.text)
+                if reply.text and reply.text != "":
+                    self.db.save_message(CONVERSATION_ID, Role.AGENT, reply.text, answer_vector)
                 yield gateway_pb2.AgentEvent(
                     run_id=request.run_id,
                     run_completed=gateway_pb2.RunCompleted(final_text=reply.text)

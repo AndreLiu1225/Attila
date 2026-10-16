@@ -6,3 +6,4 @@ class Role(str, Enum):
     AGENT = "agent"
     USER = "user"
     TOOL = "tool"
+    ASSISTANT = "assistant"
